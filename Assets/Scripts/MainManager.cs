@@ -11,21 +11,25 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text HighScoreText; // Nuevo texto para mostrar el récord
     public GameObject GameOverText;
-    
+
     private bool m_Started = false;
     private int m_Points;
-    
+    private int highScore; // Nuevo: Variable para el récord
+
     private bool m_GameOver = false;
 
-    
-    // Start is called before the first frame update
     void Start()
     {
+        // Cargar el puntaje más alto guardado
+        highScore = PlayerPrefs.GetInt("HighScore", 0);
+        UpdateHighScoreUI();
+
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
-        
-        int[] pointCountArray = new [] {1,1,2,2,5,5};
+
+        int[] pointCountArray = new[] { 1, 1, 2, 2, 5, 5 };
         for (int i = 0; i < LineCount; ++i)
         {
             for (int x = 0; x < perLine; ++x)
@@ -38,7 +42,7 @@ public class MainManager : MonoBehaviour
         }
     }
 
-    private void Update()
+    void Update()
     {
         if (!m_Started)
         {
@@ -59,6 +63,10 @@ public class MainManager : MonoBehaviour
             {
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                SceneManager.LoadScene(0); // Vuelve al menú principal
+            }
         }
     }
 
@@ -66,6 +74,23 @@ public class MainManager : MonoBehaviour
     {
         m_Points += point;
         ScoreText.text = $"Score : {m_Points}";
+
+        // Si el puntaje actual es mayor que el récord, lo actualizamos
+        if (m_Points > highScore)
+        {
+            highScore = m_Points;
+            PlayerPrefs.SetInt("HighScore", highScore);
+            PlayerPrefs.Save();
+            UpdateHighScoreUI();
+        }
+    }
+
+    void UpdateHighScoreUI()
+    {
+        if (HighScoreText != null)
+        {
+            HighScoreText.text = $"Récord: {highScore}";
+        }
     }
 
     public void GameOver()
